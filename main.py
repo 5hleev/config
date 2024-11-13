@@ -23,6 +23,16 @@ def save_log(log_file_path, log_file=None):
         tree = ET.ElementTree(log_file)
         tree.write(log_file_path)
 
+def list_directory(current_path, tar_file, log_file):
+    current_path = current_path.strip('/')
+    current_path_len = len(current_path)
+    for file in tar_file.getnames():
+        if file.startswith(current_path):
+            relative_path = file[current_path_len:].lstrip('/')
+            if relative_path and '/' not in relative_path:
+                print(relative_path)
+                log_action(log_file, "ls", f"Listed {relative_path}")
+
 def main():
     args = parse_args()
     if not os.path.exists(args.tar):
