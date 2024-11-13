@@ -33,6 +33,22 @@ def list_directory(current_path, tar_file, log_file):
                 print(relative_path)
                 log_action(log_file, "ls", f"Listed {relative_path}")
 
+def change_directory(current_path, target_directory, tar_file, log_file):
+    if target_directory == "/":
+        new_dir = "/root"
+    elif target_directory.startswith("/"):
+        new_dir = "/root" + target_directory.strip('/')
+    else:
+        new_dir = os.path.join(current_path, target_directory).replace("\\", "/").strip('/')
+
+    if any(f.startswith(new_dir + '/') for f in tar_file.getnames()):
+        log_action(log_file, "cd", f"Changed directory to {new_dir}")
+        return new_dir
+    else:
+        print(f"cd: no such file or directory: {target_directory}")
+        log_action(log_file, "cd", f"Failed to change directory to {target_directory}")
+        return current_path
+
 def main():
     args = parse_args()
     if not os.path.exists(args.tar):
