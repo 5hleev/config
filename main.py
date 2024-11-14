@@ -1,6 +1,7 @@
 import argparse
 import os
 import xml.etree.ElementTree as ET
+import tarfile
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Shell Emulator")
@@ -90,11 +91,63 @@ def find(current_path, filename, tar_file, log_file):
         print(f"find: {filename} not found")
         log_action(log_file, "find", f"File {filename} not found")
 
+def run_shell(tar, log_file_path):
+    current_path = "/root"
+    log_file = ET.Element("session")
+
+    # Если лог-файл не существует, создаем пустой XML для лога
+    if not os.path.exists(log_file_path):
+        with open(log_file_path, 'w') as log_file:
+            log_file.write('<session></session>')
+
+    try:
+        with tarfile.open(tar, "r") as tar_file:
+            while True:
+                command = input(prompt(current_path)).strip().split()
+                if not command:
+                    continue
+                cmd = command[0]
+
+                if cmd == 'exit':
+                    exit_shell(log_file, log_file_path)
+                elif cmd == 'ls':
+                    if len(command) == 1:
+                        list_directory(current_path, tar_file, log_file)
+                    else:
+                        print("ls: arguments are not supported")
+                elif cmd == 'cd':
+                    if len(command) == 2:
+                        current_path = change_directory(current_path, command[1], tar_file, log_file)
+                    elif len(command) == 1:
+                        print("cd: missing argument")
+                    else:
+                        print("cd: too many arguments")
+                elif cmd == 'tree':
+                    tree(current_path, tar_file.getnames(), log_file)
+                elif cmd == 'du':
+                    if len(command) == 1:
+                        du(current_path, tar_file, log_file)
+                    else:
+                        print("du: arguments are not supported")
+                elif cmd == 'find':
+                    if len(command) == 2:
+                        find(current_path, command[1], tar_file, log_file)
+                    else:
+                        print("find: usage: find <filename>")
+                else:
+                    print(f"{cmd}: command not found")
+
+                save_log(log_file_path, log_file)
+    except Exception as e:
+        print(f"Error occurred: {e}")
+
+
 def main():
     args = parse_args()
     if not os.path.exists(args.tar):
         print(f"Tar file {args.tar} does not exist")
         exit(1)
+    run_shell(args.tar, args.log)
 
 if __name__ == "__main__":
     main()
