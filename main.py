@@ -79,6 +79,17 @@ def du(current_path, tar_file, log_file):
     print(f"{current_path}: {size} bytes")
     log_action(log_file, "du", f"Calculated size of {current_path}: {size} bytes")
 
+def find(current_path, filename, tar_file, log_file):
+    found_files = [name for name in tar_file.getnames() if
+                   name.startswith(current_path.strip('/')) and filename in os.path.basename(name)]
+    if found_files:
+        for file in found_files:
+            print(file)
+            log_action(log_file, "find", f"Found file {file}")
+    else:
+        print(f"find: {filename} not found")
+        log_action(log_file, "find", f"File {filename} not found")
+
 def main():
     args = parse_args()
     if not os.path.exists(args.tar):
