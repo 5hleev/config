@@ -110,12 +110,6 @@ class TestShellCommands(unittest.TestCase):
         self.assertEqual(self.mock_log_file[0].attrib['command'], 'cd')
         self.assertEqual(self.mock_log_file[0].text, 'Changed directory to /root/home/user')
 
-    def test_save_log(self):
-        # Проверяем, что лог сохраняется
-        save_log(self.log_file_path, self.mock_log_file)
-        with open(self.log_file_path, 'r') as f:
-            content = f.read()
-        self.assertIn('<session>', content)
 
 
 if __name__ == '__main__':

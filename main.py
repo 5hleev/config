@@ -9,10 +9,10 @@ def parse_args():
     parser.add_argument('--log', required=True, help='Path to the log file')
     return parser.parse_args()
 
-def log_action(log_file, command, description):
-    action = ET.SubElement(log_file, "action")
-    action.set("command", command)
-    action.text = description
+def log_action(log_file, command, message):
+    action = ET.SubElement(log_file, "action", command=command)
+    action.text = message
+
 
 def exit_shell(log_file, log_file_path):
     log_action(log_file, "exit", "Exiting shell")
@@ -94,29 +94,42 @@ def list_directory(current_path, tar_file, log_file):
 
 def change_directory(current_path, target_directory, tar_file, log_file):
     if target_directory == "/":
-        return "/root"
+        # Переход в корень
+        new_dir = "/root"
+        log_action(log_file, "cd", f"Changed directory to {new_dir}")
+        return new_dir
+
     if target_directory.startswith("/"):
+        # Абсолютный путь
         new_dir = "/root"
     else:
+        # Относительный путь
         new_dir = current_path
+
     parts = target_directory.split('/')
     for part in parts:
         if part == '' or part == '.':
             continue
         elif part == "..":
+            # Переход на уровень выше
             if new_dir != "/root":
                 new_dir = "/".join(new_dir.strip('/').split('/')[:-1])
                 if not new_dir:
                     new_dir = "/root"
         else:
+            # Переход в подкаталог
             new_dir = os.path.join(new_dir, part).replace("\\", "/").strip('/')
 
+    # Проверка существования директории в архиве
     if any(f.startswith(new_dir + '/') for f in tar_file.getnames()):
-        return "/" + new_dir if not new_dir.startswith("/") else new_dir
+        new_path = "/" + new_dir if not new_dir.startswith("/") else new_dir
+        log_action(log_file, "cd", f"Changed directory to {new_path}")
+        return new_path
     else:
+        # Если директория не существует
         print(f"cd: no such file or directory: {target_directory}")
+        log_action(log_file, "cd", f"Failed to change directory to {target_directory}")
         return current_path
-
 
 def tree(current_path, tar_files, log_file, indent=0):
     prefix = " " * indent
@@ -158,15 +171,6 @@ def find(current_path, filename, tar_file, log_file):
     else:
         print(f"find: {filename} not found")
         log_action(log_file, "find", f"File {filename} not found")
-
-
-def prompt(current_path):
-    home_path = "/root"
-    if current_path == home_path:
-        path_display = "~"
-    else:
-        path_display = current_path.lstrip('/')
-    return f"emulator:{path_display}$ "
 
 def main():
     args = parse_args()
