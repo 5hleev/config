@@ -117,5 +117,6 @@ class TestShellCommands(unittest.TestCase):
             content = f.read()
         self.assertIn('<session>', content)
 
+
 if __name__ == '__main__':
     unittest.main()

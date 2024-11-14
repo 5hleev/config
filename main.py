@@ -84,6 +84,7 @@ def list_directory(current_path, tar_file, log_file):
                 print(relative_path)
                 log_action(log_file, "ls", f"Listed {relative_path}")
 
+
 def change_directory(current_path, target_directory, tar_file, log_file):
     if target_directory == "/":
         return "/root"
