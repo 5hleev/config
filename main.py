@@ -71,6 +71,14 @@ def tree(current_path, tar_files, log_file, indent=0):
         log_action(log_file, "tree", f"Displayed {sub_dir}/")
         tree(f"{current_path}/{sub_dir}".rstrip('/'), files, log_file, indent + 4)
 
+def du(current_path, tar_file, log_file):
+    size = 0
+    for member in tar_file.getmembers():
+        if member.name.startswith(current_path.strip('/')):  # Ensure the path is correctly processed
+            size += member.size
+    print(f"{current_path}: {size} bytes")
+    log_action(log_file, "du", f"Calculated size of {current_path}: {size} bytes")
+
 def main():
     args = parse_args()
     if not os.path.exists(args.tar):
