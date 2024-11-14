@@ -73,6 +73,13 @@ def run_shell(tar, log_file_path):
     except Exception as e:
         print(f"Error occurred: {e}")
 
+def prompt(current_path):
+    home_path = "/root"
+    if current_path == home_path:
+        path_display = "~"
+    else:
+        path_display = current_path.lstrip('/')
+    return f"emulator:{path_display}$ "
 
 def list_directory(current_path, tar_file, log_file):
     current_path = current_path.strip('/')
