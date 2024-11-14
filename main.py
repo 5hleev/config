@@ -49,6 +49,28 @@ def change_directory(current_path, target_directory, tar_file, log_file):
         log_action(log_file, "cd", f"Failed to change directory to {target_directory}")
         return current_path
 
+def tree(current_path, tar_files, log_file, indent=0):
+    prefix = " " * indent
+    sub_dirs = {}
+    for file in tar_files:
+        if file.startswith(current_path.lstrip("/")):
+            relative_path = file[len(current_path):].lstrip('/').split('/')
+            if len(relative_path) > 1:
+                sub_dir = relative_path[0]
+                if sub_dir not in sub_dirs:
+                    sub_dirs[sub_dir] = []
+                sub_dirs[sub_dir].append(file)
+    for file in tar_files:
+        if file.startswith(current_path.lstrip("/")):
+            relative_path = file[len(current_path):].lstrip('/').split('/')
+            if relative_path[0] not in sub_dirs and relative_path[0] != "":
+                print(f"{prefix}{relative_path[0]}")
+                log_action(log_file, "tree", f"Displayed {relative_path[0]}")
+    for sub_dir, files in sub_dirs.items():
+        print(f"{prefix}{sub_dir}/")
+        log_action(log_file, "tree", f"Displayed {sub_dir}/")
+        tree(f"{current_path}/{sub_dir}".rstrip('/'), files, log_file, indent + 4)
+
 def main():
     args = parse_args()
     if not os.path.exists(args.tar):
